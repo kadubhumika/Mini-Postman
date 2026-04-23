@@ -1,33 +1,17 @@
-# here we have to convert api into curl command
-# then parser itt it format to easily identify
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional,Dict,Any
+from pip._internal import req
 
-from services.curl_service import generate_curl, parse_curl
+from models.curl_model import CurlGenerate, CurlParse
+from services.curl_service import generate_curl, parse_url
 
-router = APIRouter(
-    prefix="/request",
-    tags=["API-request"],
-)
-class Curl_Generate_Url(BaseModel):
-    method: str
-    url: str
-    headers: Optional[Dict[str, str]] = None
-    body: Optional[Any] = None
+router = APIRouter(prefix="/curl", tags=["Curl"])
 
-class Curl_Parse(BaseModel):
-    curl_command: str
+@router.post("/generate")
+def generate(req: CurlGenerate):
+    return generate_curl(**req.dict())
 
-@router.post("/generate-url", response_model=Curl_Generate_Url)
-def generate_curl_generate(request: Curl_Generate_Url):
-    return generate_curl(
-        method = request.method,
-        url = request.url,
-        headers = request.headers,
-        body = request.body,
-        params = request.params
-    )
+# In services/curl_service.py
 @router.get("/parse")
-def parse_curl_generate(request: Curl_Parse):
-    return parse_curl(request.curl_command)
+def parse_curl(curl_command: str):
+    # Logic to extract parts...
+    return parse_curl(req.curl_command)

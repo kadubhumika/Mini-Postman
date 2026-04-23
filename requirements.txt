@@ -2,3 +2,9 @@ fastapi
 
 requests
 pydantic
+uvicorn
+httpx
+sqlalchemy
+asyncpg
+psycopg2-binary
+uncurl

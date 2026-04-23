@@ -1,46 +1,44 @@
+import httpx
 
+class RequestModel:
+    def __init__(self, base_url, headers=None):
+        self.base_url = base_url
+        self.headers = headers or {}
 
-import requests
-import time
+    async def _send(self, method, endpoint, params=None, body=None):
+        """Internal helper to manage the client lifecycle"""
+        async with httpx.AsyncClient(base_url=self.base_url) as client:
+            response = await client.request(
+                method=method,
+                url=endpoint,
+                headers=self.headers,
+                params=params,
+                json=body
+            )
+            return {
+                "status": response.status_code,
+                "data": response.json() if "application/json" in response.headers.get("Content-Type", "") else response.text
+            }
 
-def send_request(method,url,headers=None,params=None,body=None):
-    start_time = time.time()
-    try:
-        method = method.upper()
-        if method == 'GET':
-            response = requests.get(url, headers=headers, params=params)
+    async def get(self, endpoint, params=None):
+        """GET: Focused on query parameters"""
+        # You can add logic here specific to GET
+        return await self._send("GET", endpoint, params=params)
 
-        if method == 'POST':
-            response = requests.post(url, headers=headers, params=params,json=body)
+    async def post(self, endpoint, body):
+        """POST: Requires a body, often creates data"""
+        # Trigger your body_check(body) here
+        return await self._send("POST", endpoint, body=body)
 
-        if method == 'PUT':
-            response = requests.put(url, headers=headers, params=params,json=body)
+    async def put(self, endpoint, body):
+        """PUT: Requires a body, usually updates everything"""
+        # Trigger your body_check(body) here
+        return await self._send("PUT", endpoint, body=body)
 
-        if method == 'DELETE':
-            response = requests.delete(url, headers=headers, params=params,json=body)
+    async def delete(self, endpoint):
+        """DELETE: Usually just needs the endpoint/ID"""
+        return await self._send("DELETE", endpoint)
 
-        else:
-            return {"ERROR" :"Invalid HTTP URL"}
-
-        end_time = time.time()
-        response_time = round(end_time - start_time,3)
-        try:
-            data = response.json()
-        except:
-            data = response.text
-
-        return {
-            "status_code": response.status_code,
-            "response_time": response_time,
-            "headers": dict(response.headers),
-            "data": data,
-
-        }
-
-
-
-    except Exception as e:
-        return {
-            print(e)
-        }
-
+# Example Usage:
+# model = RequestModel("https://example.com")
+# result = await model.post("/users", body={"name": "John"})

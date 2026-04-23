@@ -1,37 +1,34 @@
-# first we will start with routes thst we will use in most project
-# here we will make routes of
-#GET request
-#POST request
-#PUT request
-#DELETE request
-#Accept headers
-#Accept body data
-#Accept query parameters
+from fastapi import APIRouter, BackgroundTasks
+from models.request_model import APIRequestModel
+from services.request_service import RequestModel
+from services.history_service import save_history
+from services.websocket_manager import manager
+from datetime import datetime
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional,Dict,Any
-from services.request_service import send_request
-router = APIRouter(prefix="/request", tags=["API-request"])
-# POst Method First
-class APIRequest(BaseModel):
-    method: str
-    url: str
-    headers: Optional[Dict[str, str]] = None
-    params: Optional[Dict[str, str]] = None
-    body: Optional[Dict[str,Any]] = None
+router = APIRouter(prefix="/request", tags=["request"])
 
 @router.post("/send")
-async def send_request(request: APIRequest):
+async def send_request(request: APIRequestModel):
     response = await send_request(
-        method=request.method,
-        url=request.url,
-        headers=request.headers,
-        params=request.params,
-        body=request.body
+        request.method,
+        request.url,
+        request.headers,
+        request.params,
+        request.body
+
     )
+    data = {
+        "method": request.method,
+        "url": request.url,
+        "headers": request.headers,
+        "params": request.params,
+        "body": request.body,
+        "response": response
+    }
+
+    await save_history(data)
+    await manager.broadcast({
+        "type": "request",
+        "data": data
+    })
     return response
-
-
-# post(url)
-#

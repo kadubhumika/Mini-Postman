@@ -2,69 +2,37 @@ import shlex
 import json
 from urllib.parse import urlencode
 
-def generate_curl(method,url,headers = None,params = None,  body = None):
-    method = method.upper()
-
-    if params:
-        query_string = urlencode(params)
-        url = "{}?{}".format(url, query_string)
-    if method=="GET":
-        curl = f'curl "{url}"'
-    else:
-        curl = f'curl -X {method} "{url}"'
-
-    # adding headers now
+def generate_curl(method, url, headers=None, body=None):
+    parts = [f"curl -X{method.upper()} '{url}'"]
     if headers:
         for key, value in headers.items():
-            curl += f' -H {key} "{value}"'
+            parts.append(f"--{key} '{value}'")
 
-    # add body
-    if body and method in ["POST","PUT","PATCH"]:
-        if isinstance(body,dict):
+    if body:
+        if isinstance(body, dict):
             body = json.dumps(body)
-        curl += f' -d "{body}"'
-    return {"curl_command": curl}
+            parts.append(f"-d '{body}'")
 
-def parse_curl(curl_command):
-    tokens = shlex.split(curl_command)
-    method = "GET"
-    url = ""
-    params = {}
-    headers = {}
-    body = ""
-    i =0
-    while i < len(tokens):
-        token = tokens[i]
-        if token == 'curl':
-            if i+1 < len(tokens):
-                url = tokens[i+1]
-        elif token == '-X':
-            if i+1 < len(tokens):
-                method = tokens[i+1].upper()
-        elif token == '-H':
-            if i+1 < len(tokens):
-                headers = tokens[i+1]
-                if ":" in headers:
-                    key,value = headers.split(":",1)
-                    headers[key.strip()] = value.strip()
-        elif token in ["-d","--data","--data-raw"]:
-            if i+1 < len(tokens):
-                body = tokens[i+1]
-        i+=1
-        if body and method == 'GET':
-            method = "POST"
+    return " ".join(parts)
 
-        if "?" in url:
-            base,query = url.split("?",1)
-            url = base
-            for pair in query.split("&"):
-                k,v = pair.split("=",1)
-                params[k] = v
-    return {
-            "method": method,
-            "url": url,
-            "headers": headers,
-            "body": body,
-            "params": params,
+def parse_url(curl_command:str):
+    parts = curl_command.split()
+    result ={
+        "method": "GET",  # Default
+        "url": "",
+        "headers": {},
+        "body": None
+    }
+    for i, part in enumerate(parts):
+        if part == "-X":
+            result["method"] = parts[i+1]
+        elif part == "-H":
+            header_line = parts[i + 1].replace("'", "")
+            key, val = header_line.split(": ", 1)
+            result["headers"][key] = val
+        elif part == "-d":
+            result["body"] = parts[i + 1].strip("'")
+        elif part.startswith("http"):
+            result["url"] = part.strip("'")
 
-        }
+    return result
