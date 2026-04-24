@@ -1,1 +1,1 @@
-DATABASE_URL= "postgresql+asyncpg://postgres:2468@localhost:5434/http-api-inspector"
+DATABASE_URL= "postgresql+asyncpg://postgres:2468@localhost:5432/http-api-inspector"

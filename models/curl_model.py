@@ -8,4 +8,4 @@ class CurlGenerate(BaseModel):
     body: Optional[Any]=None
 
 class CurlParse(BaseModel):
-    command_url:str
+    curl_command:str

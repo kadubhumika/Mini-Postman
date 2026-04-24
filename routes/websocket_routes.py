@@ -1,14 +1,22 @@
+# routes/websocket_routes.py
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from services.websocket_manager import manager
 
 router = APIRouter()
+
 @router.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
     await manager.connect(ws)
+
     try:
         while True:
+            data = await ws.receive_text()
 
-            data = await ws.receive_json()
+            # echo or handle commands
+            await manager.broadcast({
+                "type": "WS_MESSAGE",
+                "data": data
+            })
 
     except WebSocketDisconnect:
         manager.disconnect(ws)

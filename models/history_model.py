@@ -8,5 +8,5 @@ class History(Base):
     url = Column(String)
     params = Column(JSON)
     headers = Column(JSON)
-    body = Column(String)
-    response=Column(String)
+    body = Column(JSON)
+    response=Column(JSON)
