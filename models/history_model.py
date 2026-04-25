@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, String, JSON, Float
 from storage.database import Base
 
 class History(Base):
@@ -10,3 +10,5 @@ class History(Base):
     headers = Column(JSON)
     body = Column(JSON)
     response=Column(JSON)
+    response_time = Column(Float)
+    status_code = Column(Integer)

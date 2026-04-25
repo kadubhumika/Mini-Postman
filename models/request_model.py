@@ -8,5 +8,6 @@ class APIRequestModel(BaseModel):
     params: Dict[str, Union[str,list[str]]] = Field(default_factory=dict)
     body:Optional[Union[Dict[str,Any],List[Any],str]]=None
     description: Optional[str] = None
+    tests: dict | None = None
 
 

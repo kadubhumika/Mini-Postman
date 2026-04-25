@@ -16,13 +16,15 @@ def to_dict(obj):
         "params": obj.params,
         "headers": obj.headers,
         "body": obj.body,
-        "response": obj.response
+        "response": obj.response,
+        "response_time": obj.response_time,
+        "status_code": obj.status_code
     }
 async def get_history(limit:int=100):
     async with AsyncSessionLocal() as session:
         query = select(History).order_by(History.id.desc()).limit(limit)
         results = await session.execute(query)
 
-        return [row.__dict__ for row in results.scalars().all()]
+        return [to_dict(row) for row in results.scalars().all()]
 
 

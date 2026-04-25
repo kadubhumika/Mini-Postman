@@ -19,11 +19,14 @@ async def send_api(request: APIRequestModel):
     method = request.method.upper()
 
     if method == "GET":
-        response = await client.get(endpoint, params=request.params)
+        response = await client.get(endpoint, params=request.params, tests=request.tests)
+
     elif method == "POST":
-        response = await client.post(endpoint, body=request.body)
+        response = await client.post(endpoint, body=request.body, tests=request.tests)
+
     elif method == "PUT":
-        response = await client.put(endpoint, body=request.body)
+        response = await client.put(endpoint, body=request.body, tests=request.tests)
+
     elif method == "DELETE":
         response = await client.delete(endpoint)
     else:
@@ -35,7 +38,9 @@ async def send_api(request: APIRequestModel):
         "headers": request.headers,
         "params": request.params,
         "body": request.body,
-        "response": response
+        "response": response,
+        "status_code": response.get("status"),
+        "response_time": response.get("time_ms")
     }
 
     await save_history(data)
