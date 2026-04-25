@@ -5,7 +5,16 @@ from storage.database import AsyncSessionLocal
 async def save_history(data:dict):
     async with AsyncSessionLocal() as session:
         async with session.begin():
-            history = History(**data)
+            history = History(
+                method=data.get("method"),
+                url=data.get("url"),
+                params=data.get("params"),
+                headers=data.get("headers"),
+                body=data.get("body"),
+                response=data.get("response"),
+                response_time=data.get("response_time"),
+                status_code=data.get("status_code"),
+            )
             session.add(history)
 
 def to_dict(obj):
@@ -20,7 +29,7 @@ def to_dict(obj):
         "response_time": obj.response_time,
         "status_code": obj.status_code
     }
-async def get_history(limit:int=100):
+async def get_history(limit:int=10,method: str = None):
     async with AsyncSessionLocal() as session:
         query = select(History).order_by(History.id.desc()).limit(limit)
         results = await session.execute(query)

@@ -4,7 +4,9 @@ from services.history_service import get_history
 
 router = APIRouter(prefix="/history", tags=["History"])
 
-@router.get("/") # You could add response_model=List[HistoryResponse] here
-async def history(limit: int = Query(default=20, le=100)):
-
-    return await get_history(limit=limit)
+@router.get("/")
+async def history(
+    limit: int = Query(10, le=100),
+    method: str | None = None
+):
+    return await get_history(limit, method)
