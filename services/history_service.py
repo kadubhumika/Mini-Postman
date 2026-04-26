@@ -29,11 +29,15 @@ def to_dict(obj):
         "response_time": obj.response_time,
         "status_code": obj.status_code
     }
-async def get_history(limit:int=10,method: str = None):
+async def get_history(limit: int = 10, method: str = None):
     async with AsyncSessionLocal() as session:
-        query = select(History).order_by(History.id.desc()).limit(limit)
+        query = select(History).order_by(History.id.desc())
+
+        if method:
+            query = query.where(History.method == method)
+
+        query = query.limit(limit)
+
         results = await session.execute(query)
-
         return [to_dict(row) for row in results.scalars().all()]
-
 
